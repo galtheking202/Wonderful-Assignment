@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose app port if needed (for example, if you have a web UI)
-EXPOSE 8000
+EXPOSE 8888
 
 # Start the Python app
 CMD ["python3", "main.py"]

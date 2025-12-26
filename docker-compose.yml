@@ -18,8 +18,11 @@ services:
       - mongo
     environment:
       MONGO_URI: mongodb://root:example@mongo:27017
+
     ports:
-      - "8000:8000"
+      - "8888:8888"
+    env_file:
+      - .env
 
 volumes:
   mongo-data:

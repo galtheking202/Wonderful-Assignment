@@ -18,5 +18,5 @@ db.medicens_stock.insertMany([
   { id: 2, medicine_id: 2, medicine_name: "Atorvastatin" ,prescription:true},
   { id: 3, medicine_id: 3, medicine_name: "Advil" ,prescription:false},
   { id: 4, medicine_id: 4, medicine_name: "Zyrtec" ,prescription:false},
-  { id: 5, medicine_id: 5, medicine_name: "Tylenol" ,prescription:false}
+  { id: 5, medicine_id: 5, medicine_name: {"en":"Tylenol","he":"טילנול"} ,prescription:false}
 ]);
