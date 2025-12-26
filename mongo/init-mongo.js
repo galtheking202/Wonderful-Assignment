@@ -13,7 +13,7 @@ db.users.insertMany([
   { id: 10, name: "Jack", age: 45 }
 ]);
 
-db.medicens_stoc.insertMany([
+db.medicens_stock.insertMany([
   { id: 1, medicine_id: 1, medicine_name: "Amoxicillin" ,prescription:true},
   { id: 2, medicine_id: 2, medicine_name: "Atorvastatin" ,prescription:true},
   { id: 3, medicine_id: 3, medicine_name: "Advil" ,prescription:false},

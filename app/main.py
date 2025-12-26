@@ -1,9 +1,9 @@
-from pymongo import MongoClient
+import uvicorn
+from fastapi import FastAPI, HTTPException,Request
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
-client = MongoClient("mongodb://root:example@mongo:27017")
-db = client["mydb"]
+app = FastAPI()
+templates = Jinja2Templates(directoty="templates")
 
-print(list(db.users.find()))
-print(list(db.medicens_stoc.find()))
-
-print("hello world")
+uvicorn.run(app,host="0.0.0.0",port=8000)

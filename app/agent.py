@@ -4,11 +4,15 @@ from contexts import AGENT_CONTEXT
 
 # ---------------- TOOLS ---------------- #
 
+client = MongoClient("mongodb://root:example@mongo:27017")
+db = client["mydb"]
 
 
 def get_medicine_data_by_name(medicine_name)
     # retrive medicine data by medicine_name
     # if medicine name does not exist return None
+
+    db["medicens_stock"].find()
     return
     
 TOOLS = [
