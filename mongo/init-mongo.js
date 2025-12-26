@@ -14,9 +14,9 @@ db.users.insertMany([
 ]);
 
 db.medicens_stoc.insertMany([
-  { id: 1, medicen_id: 1, diagnosis: "Asthma" },
-  { id: 2, user_id: 2, diagnosis: "Diabetes" },
-  { id: 3, user_id: 3, diagnosis: "Hypertension" },
-  { id: 4, user_id: 4, diagnosis: "Allergy" },
-  { id: 5, user_id: 5, diagnosis: "Flu" }
+  { id: 1, medicine_id: 1, medicine_name: "Amoxicillin" ,prescription:true},
+  { id: 2, medicine_id: 2, medicine_name: "Atorvastatin" ,prescription:true},
+  { id: 3, medicine_id: 3, medicine_name: "Advil" ,prescription:false},
+  { id: 4, medicine_id: 4, medicine_name: "Zyrtec" ,prescription:false},
+  { id: 5, medicine_id: 5, medicine_name: "Tylenol" ,prescription:false}
 ]);

@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  mongo:
+    build: ./mongo
+    container_name: pharmacy-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: ./app
+    container_name: pharmacy-app
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://root:example@mongo:27017
+    ports:
+      - "8000:8000"
+
+volumes:
+  mongo-data:
