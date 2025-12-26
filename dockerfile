@@ -1,8 +1,7 @@
-FROM python:3.11-slim
-
 # Install MongoDB
 FROM mongo:7.0
 
+RUN apt-get update && apt-get install -y python3 python3-pip
 
 WORKDIR /app
 
@@ -19,4 +18,4 @@ RUN mkdir -p /data/db
 EXPOSE 27017
 
 # Start Python script (starts MongoDB internally)
-CMD ["python", "main.py"]
+CMD ["python3", "main.py"]
