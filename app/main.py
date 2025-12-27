@@ -5,7 +5,7 @@ from agent_utils.agent import MedicineAsisstentAgent
 from pathlib import Path
 import uvicorn
 from logger import LOG_BUFFER
-
+from pymongo import MongoClient
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -52,5 +52,9 @@ def get_logs():
     return {
         "logs": "\n".join(LOG_BUFFER)
     }
+
+mongo_client = MongoClient("mongodb://root:example@mongo:27017")
+db = mongo_client["mydb"]
+print(list(db["medicens_stock"].find()))
 
 uvicorn.run(app, host="0.0.0.0", port=8888)

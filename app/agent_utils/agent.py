@@ -54,7 +54,6 @@ class MedicineAsisstentAgent:
                     })
                 })
                     
-            print(self.input_list)
             # 4️⃣ Final model call after tool execution
             response = self.client.responses.create(
                 model="gpt-5",
@@ -62,6 +61,7 @@ class MedicineAsisstentAgent:
                 tools=tools,
                 input=self.input_list,
                 )
+            print(response.output_text) 
             return response.output_text
         except Exception as e:
             Logger.log(f"something went wrong: {e}")
