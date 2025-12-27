@@ -28,11 +28,11 @@ def get_medicine_data_by_name(medicine_name: str = ""):
         {"id": 0, "_id": 0}
     ))
 
-def dedact_medicine_inventory(medicine_name: str = "", amount: int = 0):
+def deduct_medicine_inventory(medicine_name: str = "", amount: int = 0):
     """
-    This function will deduct the inventory of a medicine by its name.
+    This function will deduct the inventory of a medicine by its name used when client purchase medicine.
     """
-    Logger.log("dedact_medicine_inventory tool called")
+    Logger.log("deduct_medicine_inventory tool called")
     medicine_name = medicine_name.strip()
 
     try:
@@ -57,11 +57,11 @@ def dedact_medicine_inventory(medicine_name: str = "", amount: int = 0):
     else:
         return f"No matching medicine found for {medicine_name}."
     
-def dedact_user_credits(user_name: str = "", amount: int = 0):
+def deduct_user_credits(user_name: str = "", amount: int = 0):
         """
-        This function will deduct the credits of a user by their name.
+        This function will deduct the credits of a user by their name used when client purchase medicine.
         """
-        Logger.log("dedact_user_credits tool called")
+        Logger.log("deduct_user_credits tool called")
         user_name = user_name.strip()
 
         try:
@@ -107,8 +107,8 @@ TOOLS = [
     },
     {
         "type": "function",
-        "name": dedact_medicine_inventory.__name__,
-        "description": dedact_medicine_inventory.__doc__,
+        "name": deduct_medicine_inventory.__name__,
+        "description": deduct_medicine_inventory.__doc__,
         "parameters": {
             "type": "object",
             "properties": {
@@ -126,8 +126,8 @@ TOOLS = [
     },
     {
         "type": "function",
-        "name": dedact_user_credits.__name__,
-        "description": dedact_user_credits.__doc__,
+        "name": deduct_user_credits.__name__,
+        "description": deduct_user_credits.__doc__,
         "parameters": {
             "type": "object",
             "properties": {

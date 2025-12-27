@@ -6,7 +6,10 @@ from openai import OpenAI
 import json
 
 
-FUNC_TOOLS = {"get_medicine_data_by_name":get_medicine_data_by_name}
+FUNC_TOOLS = {"get_medicine_data_by_name":get_medicine_data_by_name,
+              "deduct_user_credits":deduct_user_credits,
+              "deduct_medicine_inventory":deduct_medicine_inventory
+              } #TODO make this pretty
 
 import requests
 import os
@@ -33,7 +36,7 @@ class MedicineAsisstentAgent:
                 tools=tools,
             )
             self.input_list += response.output
-
+            print(response.output)
             for item in response.output:
                 if item.type == "function_call":
                     print(item)
@@ -57,7 +60,7 @@ class MedicineAsisstentAgent:
             # 4️⃣ Final model call after tool execution
             response = self.client.responses.create(
                 model="gpt-5",
-                instructions="Analyze the tool outputs and provide a final response to the user. based on the tool results only.",
+                instructions="Analyze the tool outputs and provide a final response to the user. based on the tool results.",
                 tools=tools,
                 input=self.input_list,
                 )
