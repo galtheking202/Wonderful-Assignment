@@ -12,7 +12,6 @@ def get_medicine_data_by_name(medicine_name: str = ""):
     """
     Logger.log("get_medicine_data_by_name tool called")
     medicine_name = medicine_name.strip()
-
     try:
         medicine_name = medicine_name.lower()
     except Exception as e:
@@ -28,67 +27,68 @@ def get_medicine_data_by_name(medicine_name: str = ""):
         {"id": 0, "_id": 0}
     ))
 
-def deduct_medicine_inventory(medicine_name: str = "", amount: int = 0):
+def purchase_medicine(user_name: str = "", medicine_name: str = "", amount: int = 1):
     """
-    This function will deduct the inventory of a medicine by its name used when client purchase medicine.
+    This function processes a medicine purchase for a user.
+    It checks if the user has enough credits, if the medicine is in stock,
+    and if a prescription is required, verifies the user has it.
     """
-    Logger.log("deduct_medicine_inventory tool called")
-    medicine_name = medicine_name.strip()
+    Logger.log("purchase_medicine tool called")
+    user_name = user_name.strip().lower()
+    medicine_name = medicine_name.strip().lower()
 
-    try:
-        medicine_name = medicine_name.lower()
-    except Exception as e:
-        medicine_name = medicine_name
+    # Fetch user
+    user = db["users"].find_one(
+        {
+            "$or": [
+                {"name_en": {"$regex": f"^{user_name}$", "$options": "i"}},
+                {"name_he": {"$regex": f"^{user_name}$", "$options": "i"}}
+            ]
+        }
+    )
+    if not user:
+        return f"No matching user found for {user_name}."
 
-    result = db["medicens_stock"].update_one(
+    # Fetch medicine
+    medicine = db["medicens_stock"].find_one(
         {
             "$or": [
                 {"medicine_name_en": {"$regex": f"^{medicine_name}$", "$options": "i"}},
                 {"medicine_name_he": {"$regex": f"^{medicine_name}$", "$options": "i"}}
             ]
-        },
-        {
-            "$inc": {"inventory": -amount}
         }
     )
-
-    if result.modified_count > 0:
-        return f"Deducted {amount} from {medicine_name} inventory."
-    else:
+    if not medicine:
         return f"No matching medicine found for {medicine_name}."
-    
-def deduct_user_credits(user_name: str = "", amount: int = 0):
-        """
-        This function will deduct the credits of a user by their name used when client purchase medicine.
-        """
-        Logger.log("deduct_user_credits tool called")
-        user_name = user_name.strip()
 
-        try:
-            user_name = user_name.lower()
-        except Exception as e:
-            user_name = user_name
+    # Check inventory
+    if medicine.get("inventory", 0) < amount:
+        return f"{medicine_name} is out of stock."
 
-        result = db["users"].update_one(
-            {
-                "$or": [
-                    {"name_en": {"$regex": f"^{user_name}$", "$options": "i"}},
-                    {"name_he": {"$regex": f"^{user_name}$", "$options": "i"}}
-                ]
-            },
-            {
-                "$inc": {"credits": -amount}
-            }
-        )
+    # Check credits
+    if user.get("credits", 0) < medicine.get("credit_cost", 0) * amount:
+        return f"{user_name} does not have enough credits to purchase {medicine_name}."
 
-        if result.modified_count > 0:
-            return f"Deducted {amount} credits from {user_name}."
-        else:
-            return f"No matching user found for {user_name}."
-        
+    # Check prescription if required
+    if medicine.get("prescription", False):
+        # prescription_medicens is a list of medicine ids
+        if medicine.get("id") not in user.get("prescription_medicens", []):
+            return f"{user_name} does not have a prescription for {medicine_name}."
+
+    # Deduct inventory and credits
+    db["medicens_stock"].update_one(
+        {"_id": medicine["_id"]},
+        {"$inc": {"inventory": -1}}
+    )
+    db["users"].update_one(
+        {"_id": user["_id"]},
+        {"$inc": {"credits": -medicine.get("credit_cost", 0)}}
+    )
+
+    return f"{user_name} successfully purchased {medicine_name}."
 
 
-
+# Add to TOOLS
 TOOLS = [
     {
         "type": "function",
@@ -107,27 +107,8 @@ TOOLS = [
     },
     {
         "type": "function",
-        "name": deduct_medicine_inventory.__name__,
-        "description": deduct_medicine_inventory.__doc__,
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "medicine_name": {
-                    "type": "string",
-                    "description": "Name of the medicine"
-                },
-                "amount": {
-                    "type": "integer",
-                    "description": "Amount to deduct from inventory"
-                }
-            },
-            "required": ["medicine_name", "amount"]
-        },
-    },
-    {
-        "type": "function",
-        "name": deduct_user_credits.__name__,
-        "description": deduct_user_credits.__doc__,
+        "name": purchase_medicine.__name__,
+        "description": purchase_medicine.__doc__,
         "parameters": {
             "type": "object",
             "properties": {
@@ -135,12 +116,16 @@ TOOLS = [
                     "type": "string",
                     "description": "Name of the user"
                 },
+                "medicine_name": {
+                    "type": "string",
+                    "description": "Name of the medicine"
+                },
                 "amount": {
                     "type": "integer",
-                    "description": "Amount of credits to deduct"
+                    "description": "Amount of medicine to purchase"
                 }
             },
-            "required": ["user_name", "amount"]
+            "required": ["user_name", "medicine_name", "amount"]
         },
     }
 ]

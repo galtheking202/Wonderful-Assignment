@@ -7,9 +7,8 @@ import json
 
 
 FUNC_TOOLS = {"get_medicine_data_by_name":get_medicine_data_by_name,
-              "deduct_user_credits":deduct_user_credits,
-              "deduct_medicine_inventory":deduct_medicine_inventory
-              } #TODO make this pretty
+              "purchase_medicine":purchase_medicine,
+}
 
 import requests
 import os
