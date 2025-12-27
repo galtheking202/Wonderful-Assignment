@@ -1,11 +1,10 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from agent import MedicineAsisstentAgent
+from agent_utils.agent import MedicineAsisstentAgent
 from pathlib import Path
 import uvicorn
-import json
-from logger import Logger,LOG_BUFFER
+from logger import LOG_BUFFER
 
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
@@ -44,7 +43,7 @@ async def invoke_agent(request: AgentRequest):
         
         # Run the agent with the user's prompt
         agent = MedicineAsisstentAgent()
-        return agent.invoke(request.prompt)
+        return AgentResponse(response=str(agent.run_agent(request.prompt)))
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error invoking agent: {str(e)}")
