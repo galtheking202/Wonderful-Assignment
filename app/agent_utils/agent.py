@@ -1,3 +1,4 @@
+from xmlrpc import client
 from contexts import AGENT_CONTEXT
 from dotenv import load_dotenv
 from .tools import *
@@ -20,53 +21,49 @@ class MedicineAsisstentAgent:
     def __init__(self):
         self.context = AGENT_CONTEXT
         self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.input_list = []
     def invoke_openai_with_tools(self,message: str,tools: list = TOOLS):
+        self.input_list.append({"role": "system", "content": self.context})
+        self.input_list.append({"role": "user", "content": message})
         try:
             # 1️⃣ Initial model calls
             response = self.client.responses.create(
                 model="gpt-5",
-                input=[
-                    {"role": "system", "content": self.context},
-                    {"role": "user", "content": message},
-                ],
+                input=self.input_list,
                 tools=tools,
             )
+            self.input_list += response.output
 
-            # 2️⃣ Check if model wants to call a tool
-            tool_calls = response.output
-            tool_outputs = []
-
-            for item in tool_calls:
+            for item in response.output:
                 if item.type == "function_call":
-                    tool_name = item.name
+                    print(item)
+                    if FUNC_TOOLS.get(item.name) is None:
+                        raise Exception(f"Tool {item.name} not found")
+                    
+                    tool = FUNC_TOOLS[item.name]
                     arguments = json.loads(item.arguments)
-                    print(type(arguments))
-                    if FUNC_TOOLS.get(tool_name,None) is None:
-                        raise ValueError(f"Tool {tool_name} not implemented")
 
-                    tool = FUNC_TOOLS[tool_name]
                     # 3️⃣ Execute tool
-                    tool_result = tool(**arguments)
+                    tool_result = tool(**arguments) 
 
-                    tool_outputs.append({
-                        "type": "tool_output",
-                        "tool_call_id": item.id,
-                        "output": tool_result
+                    self.input_list.append({
+                    "type": "function_call_output",
+                    "call_id": item.call_id,
+                    "output": json.dumps({
+                        item.name : tool_result
                     })
-
-            # 4️⃣ If no tools were called, return model output
-            if not tool_outputs:
-                return response.output_text
-
-            # 5️⃣ Send tool results back to model
-            final_response = client.responses.create(
+                })
+                    
+            print(self.input_list)
+            # 4️⃣ Final model call after tool execution
+            response = self.client.responses.create(
                 model="gpt-5",
-                input=tool_outputs,
-            )
-
-            return final_response.output_text
-
+                instructions="Analyze the tool outputs and provide a final response to the user. based on the tool results only.",
+                tools=tools,
+                input=self.input_list,
+                )
+            return response.output_text
         except Exception as e:
             Logger.log(f"something went wrong: {e}")
             return None
-        
+

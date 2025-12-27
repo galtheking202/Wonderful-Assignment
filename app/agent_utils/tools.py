@@ -4,8 +4,8 @@ from logger import Logger
 import requests
 
 # ---------------- TOOLS ---------------- #
-client = MongoClient("mongodb://root:example@mongo:27017")
-db = client["mydb"]
+mongo_client = MongoClient("mongodb://root:example@mongo:27017")
+db = mongo_client["mydb"]
 
 
 def agent_request(context:str,message:str,api_key:str):
