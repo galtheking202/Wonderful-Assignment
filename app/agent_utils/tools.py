@@ -1,11 +1,6 @@
-from pymongo import MongoClient
 from logger import Logger
-import requests
-
+from agent_utils.db import db
 # ---------------- TOOLS ---------------- #
-mongo_client = MongoClient("mongodb://root:example@mongo:27017")
-db = mongo_client["mydb"]
-
 def get_medicine_data_by_name(medicine_name: str = ""):
     """
     This function will return medicine data by its name (case-insensitive, trims whitespace).
@@ -86,46 +81,3 @@ def purchase_medicine(user_name: str = "", medicine_name: str = "", amount: int 
     )
 
     return f"{user_name} successfully purchased {medicine_name}."
-
-
-# Add to TOOLS
-TOOLS = [
-    {
-        "type": "function",
-        "name": get_medicine_data_by_name.__name__,
-        "description": get_medicine_data_by_name.__doc__,
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "medicine_name": {
-                    "type": "string",
-                    "description": "Name of the medicine"
-                }
-            },
-            "required": ["medicine_name"]
-        },
-    },
-    {
-        "type": "function",
-        "name": purchase_medicine.__name__,
-        "description": purchase_medicine.__doc__,
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "user_name": {
-                    "type": "string",
-                    "description": "Name of the user"
-                },
-                "medicine_name": {
-                    "type": "string",
-                    "description": "Name of the medicine"
-                },
-                "amount": {
-                    "type": "integer",
-                    "description": "Amount of medicine to purchase"
-                }
-            },
-            "required": ["user_name", "medicine_name", "amount"]
-        },
-    }
-]

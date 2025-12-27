@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from agent_utils.agent import MedicineAsisstentAgent
+from agent_utils.agent import MedicineAssistantAgent
 from pathlib import Path
 import uvicorn
 from logger import LOG_BUFFER
@@ -41,8 +41,8 @@ async def invoke_agent(request: AgentRequest):
         if not request.prompt.strip():
             raise HTTPException(status_code=400, detail="Prompt cannot be empty")
         # Run the agent with the user's prompt
-        agent = MedicineAsisstentAgent()
-        return AgentResponse(response=str(agent.invoke_openai_with_tools(request.prompt)))
+        agent = MedicineAssistantAgent()
+        return AgentResponse(response=str(agent.run_agent(request.prompt)))
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error invoking agent: {str(e)}")
