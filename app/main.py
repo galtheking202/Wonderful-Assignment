@@ -40,10 +40,9 @@ async def invoke_agent(request: AgentRequest):
     try:
         if not request.prompt.strip():
             raise HTTPException(status_code=400, detail="Prompt cannot be empty")
-        
         # Run the agent with the user's prompt
         agent = MedicineAsisstentAgent()
-        return AgentResponse(response=str(agent.run_agent(request.prompt)))
+        return AgentResponse(response=str(agent.invoke_openai_with_tools(request.prompt)))
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error invoking agent: {str(e)}")

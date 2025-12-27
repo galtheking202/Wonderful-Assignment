@@ -9,42 +9,33 @@ db = client["mydb"]
 
 
 def agent_request(context:str,message:str,api_key:str):
-    payload = {
-            "model": "gpt-5",
-            "input": [
+    try:
+        response = client.responses.create(
+            model="gpt-5",
+            input=[
                 {
                     "role": "system",
-                    "content": str(context)
+                    "content": str(context),
                 },
                 {
                     "role": "user",
-                    "content": message
+                    "content": message,
                 }
             ],
-            "tools": TOOLS
-        }
+            tools=tools,
+        )
+        return response
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    response = requests.post(
-        "https://api.openai.com/v1/responses",
-        headers=headers,
-        json=payload,
-        timeout=30
-    )
-    if response.status_code != 200:
-        Logger.log(f"something went wrong {response.status_code}")
-    else:
-        return response.json()
+    except Exception as e:
+        Logger.log(f"something went wrong: {e}")
+        return None
     
 
 def tool_preformed(previous_response_id,tool_input,api_key):
     payload = {
         "model": "gpt-5",
         "previous_response_id": previous_response_id,
-        "input": tool_input
+        "input": [tool_input]
     }
 
     print(payload)
@@ -66,7 +57,7 @@ def tool_preformed(previous_response_id,tool_input,api_key):
     
 
 
-def get_medicine_data_by_name(medicine_name):
+def get_medicine_data_by_name(medicine_name:str=""):
     ### this function will return medicine data by its name, data will include availability prescription requierment###
     Logger.log("get_medicine_data_by_name tool called")
     return list(db["medicens_stock"].find({"medicine_name":medicine_name},{"id":0,"_id":0}))
