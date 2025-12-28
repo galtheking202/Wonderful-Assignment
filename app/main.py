@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from agent_utils.agent import MedicineAssistantAgent
 from pathlib import Path
@@ -30,22 +31,24 @@ async def home(request: Request):
 
 
 
-@app.post("/agent", response_model=AgentResponse)
+@app.post("/agent")
 async def invoke_agent(request: AgentRequest):
-    """
-    Invoke the AI agent with a prompt.
-    
-    The agent can read and write text files based on natural language instructions.
-    """
-    try:
-        if not request.prompt.strip():
-            raise HTTPException(status_code=400, detail="Prompt cannot be empty")
-        # Run the agent with the user's prompt
-        agent = MedicineAssistantAgent()
-        return AgentResponse(response=str(agent.run_agent(request.prompt)))
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error invoking agent: {str(e)}")
+    if not request.prompt.strip():
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty")
+
+    agent = MedicineAssistantAgent()
+
+    def stream():
+        try:
+            for chunk in agent.run_agent_stream(request.prompt):
+                yield chunk
+        except Exception as e:
+            yield f"\n[ERROR] {str(e)}"
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/plain"
+    )
 
 @app.get("/logs")
 def get_logs():

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pharmacy Assistant</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
@@ -10,7 +10,6 @@
 <style>
 :root {
     --bg: #0b0f14;
-    --panel: #121822;
     --panel-glass: rgba(18, 24, 34, 0.85);
     --accent: #4f9cff;
     --accent-soft: rgba(79, 156, 255, 0.2);
@@ -24,7 +23,7 @@
 
 body {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: Inter, sans-serif;
     background: radial-gradient(circle at top, #111827, #020617);
     color: var(--text);
 }
@@ -40,33 +39,24 @@ body {
     max-width: 720px;
 }
 
-h1 {
-    font-weight: 600;
-    margin-bottom: 24px;
-}
-
 .card {
     background: var(--panel-glass);
     backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
 textarea {
     width: 100%;
-    background: #0b1220;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    color: var(--text);
-    resize: vertical;
     min-height: 140px;
+    padding: 14px;
+    background: #0b1220;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    color: var(--text);
     outline: none;
 }
-
-textarea::placeholder { color: var(--muted); }
 
 textarea:focus {
     border-color: var(--accent);
@@ -81,23 +71,22 @@ button {
     background: linear-gradient(135deg, #2563eb, #4f9cff);
     color: white;
     cursor: pointer;
-    font-weight: 500;
 }
 
 #response {
     margin-top: 20px;
     padding: 16px;
-    border-radius: 10px;
     background: #020617;
+    border-radius: 10px;
     border: 1px solid var(--border);
-    display: none;
     white-space: pre-wrap;
     line-height: 1.6;
+    display: none;
 }
 
 .error {
-    border-color: var(--danger);
     color: var(--danger);
+    border-color: var(--danger);
 }
 
 .sidebar {
@@ -105,106 +94,73 @@ button {
     border-left: 1px solid var(--border);
     padding: 24px;
     background: #020617;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar h2 {
-    margin: 0 0 14px 0;
-    font-weight: 500;
-    font-size: 18px;
-    color: var(--muted);
 }
 
 #logs {
-    flex: 1;
-    background: #020617;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
+    height: 100%;
     font-family: "JetBrains Mono", monospace;
     font-size: 12px;
-    color: #22c55e;
-    overflow-y: auto;
     white-space: pre-wrap;
+    color: #22c55e;
 }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-    <!-- Main -->
     <div class="main">
-        <h1>🧠 Note Agent</h1>
-
+        <h1>🧠 Pharmacy Agent</h1>
         <div class="card">
             <form id="agentForm">
-                <textarea id="prompt" placeholder="Enter your prompt..." required></textarea>
+                <textarea id="prompt" placeholder="Ask about a medication..." required></textarea>
                 <button type="submit">Run Agent</button>
             </form>
-
             <div id="response"></div>
         </div>
     </div>
 
-    <!-- Logs -->
     <div class="sidebar">
-        <h2>System Logs</h2>
+        <h3>System Logs</h3>
         <div id="logs">Waiting for logs...</div>
     </div>
 
 </div>
 
 <script>
-const logsDiv = document.getElementById('logs');
-const form = document.getElementById('agentForm');
-const promptInput = document.getElementById('prompt');
-const responseDiv = document.getElementById('response');
+const form = document.getElementById("agentForm");
+const promptInput = document.getElementById("prompt");
+const responseDiv = document.getElementById("response");
 
-async function fetchLogs() {
-    try {
-        const res = await fetch('/logs');
-        const data = await res.json();
-        logsDiv.textContent = data.logs || 'No logs available';
-    } catch {
-        logsDiv.textContent = 'Failed to load logs';
-    }
-}
-
-setInterval(fetchLogs, 3000);
-
-form.addEventListener('submit', async (e) => {
+form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    responseDiv.style.display = 'block';
-    responseDiv.className = '';
-    responseDiv.textContent = 'Running agent...';
+    responseDiv.style.display = "block";
+    responseDiv.className = "";
+    responseDiv.textContent = "";
 
-    try {
-        const response = await fetch('/agent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: promptInput.value })
-        });
+    const res = await fetch("/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: promptInput.value })
+    });
 
-        const data = await response.json();
+    if (!res.ok || !res.body) {
+        responseDiv.textContent = "Streaming not supported.";
+        responseDiv.className = "error";
+        return;
+    }
 
-        if (response.ok) {
-            responseDiv.textContent = data.response;
-            fetchLogs();
-        } else {
-            responseDiv.className = 'error';
-            responseDiv.textContent = data.detail || 'Unknown error';
-        }
-    } catch (err) {
-        responseDiv.className = 'error';
-        responseDiv.textContent = err.message;
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        responseDiv.textContent += decoder.decode(value, { stream: true });
     }
 });
-
-fetchLogs();
 </script>
 
 </body>

@@ -12,6 +12,58 @@ class BaseAgent:
         self.client = OpenAI(api_key=api_key)
         self.input_list = []
 
+    def run_agent_stream(self, message: str):
+        self.input_list.append({"role": "system", "content": self.context})
+        self.input_list.append({"role": "user", "content": message})
+
+        # 1️⃣ Stream initial response
+        with self.client.responses.stream(
+            model="gpt-5",
+            input=self.input_list,
+            tools=self.tools,
+        ) as stream:
+
+            for event in stream:
+                if event.type == "response.output_text.delta":
+                     yield event.delta  # ✅ STREAM TO CLIENT
+
+                elif event.type == "response.output_item.added":
+                    if event.item.type == "function_call":
+                        self.input_list.append(event.item)
+
+            response = stream.get_final_response()
+
+        self.input_list += response.output
+
+        # 2️⃣ Execute tools
+        for item in response.output:
+            if item.type == "function_call":
+                tool = self.func_tools_dict[item.name]
+                args = json.loads(item.arguments)
+                result = tool(**args)
+
+                self.input_list.append({
+                    "type": "function_call_output",
+                    "call_id": item.call_id,
+                    "output": json.dumps({item.name: result})
+                })
+
+        # 3️⃣ Stream final answer
+        with self.client.responses.stream(
+            model="gpt-5",
+            instructions="Analyze the tool outputs and provide a final response to the user.",
+            input=self.input_list,
+            tools=self.tools,
+        ) as stream:
+
+            for event in stream:
+                if event.type == "response.output_text.delta":
+                    yield event.delta  # ✅ STREAM TO CLIENT
+
+            final_response = stream.get_final_response()
+            return final_response.output_text
+
+
     def run_agent(self, message: str):
         self.input_list.append({"role": "system", "content": self.context})
         self.input_list.append({"role": "user", "content": message})
