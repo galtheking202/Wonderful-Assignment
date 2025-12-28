@@ -176,8 +176,7 @@ def function_to_tool_schema(func):
             "type": json_type,
             "description": name
         }
-
-    return {
+    d = {
         "type": "function",
         "name": func.__name__,
         "description": func.__doc__ or "",
@@ -187,3 +186,5 @@ def function_to_tool_schema(func):
             "required": required
         }
     }
+    print(d)
+    return d

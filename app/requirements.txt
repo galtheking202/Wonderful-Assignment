@@ -6,4 +6,3 @@ langchain-openai
 langgraph
 python-dotenv
 pymongo
-openai
