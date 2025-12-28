@@ -1,24 +1,32 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from agent_utils.agent import MedicineAssistantAgent
-from logger import LOG_BUFFER
 from pathlib import Path
 import uvicorn
+from logger import LOG_BUFFER
 
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
+# Request model
+class AgentRequest(BaseModel):
+    """Request model for agent invocation."""
+    prompt: str
+
 @app.get("/")
-async def home(request: str):
+async def home(request: Request):
     """Serve the main HTML interface."""
     return templates.TemplateResponse("index.html", {"request": request})
 
+
+
 @app.post("/agent")
-async def invoke_agent(request: str):
-    if not request.strip():
+async def invoke_agent(request: AgentRequest):
+    if not request.prompt.strip():
         raise HTTPException(status_code=400, detail="Prompt cannot be empty")
 
     agent = MedicineAssistantAgent()
