@@ -38,8 +38,9 @@ class BaseAgent:
         agent.add_tool('my_tool', my_tool_function)
         result = agent.run_agent('Use my_tool to fetch data')
     """
-    def __init__(self,context: str = "",api_key:str=None):
+    def __init__(self,context: str = "",tool_instructions: str = "",api_key:str=None):
         self.context = context
+        self.tool_instructions = tool_instructions
         self.func_tools_dict = {}
         self.tools = []
         self.client = OpenAI(api_key=api_key)
@@ -86,7 +87,7 @@ class BaseAgent:
         # 3️⃣ Stream final answer
         with self.client.responses.stream(
             model="gpt-5",
-            instructions="Analyze the tool outputs and provide a final response to the user.",
+            instructions=self.tool_instructions,
             input=self.input_list,
             tools=self.tools,
         ) as stream:

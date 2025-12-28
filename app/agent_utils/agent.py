@@ -1,7 +1,7 @@
-from contexts import AGENT_CONTEXT
+from .contexts import *
+from .tools import *
 from .base_agent import BaseAgent
 from dotenv import load_dotenv
-from .tools import *
 import os
 
 load_dotenv()
@@ -11,8 +11,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 class MedicineAssistantAgent(BaseAgent):
-    def __init__(self, context: str = AGENT_CONTEXT, api_key: str = OPENAI_API_KEY):
-        super().__init__(context=context, api_key=api_key)
+    def __init__(self, context: str = AGENT_CONTEXT, tool_instructions: str = TOOL_INSTRUCTIONS, api_key: str = OPENAI_API_KEY):
+        super().__init__(context=context, tool_instructions=tool_instructions, api_key=api_key)
         self.add_tool(get_client_prescriptions)
         self.add_tool(get_medicine_by_name)
         self.add_tool(purchase_medicine)
