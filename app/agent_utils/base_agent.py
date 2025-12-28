@@ -5,6 +5,39 @@ from openai import OpenAI
 from typing import get_type_hints
 
 class BaseAgent:
+    """Lightweight agent wrapper for the OpenAI Responses API.
+
+    This class simplifies building multi-step agent interactions with an
+    `OpenAI` responses client by:
+    - managing a persistent conversation `input_list` (system, user, and
+      function-call outputs),
+    - registering Python callables as model-invokable tools (exposing a
+      JSON-schema for the model),
+    - executing tool calls returned by the model and feeding results back
+      into subsequent model calls,
+    - supporting streaming and non-streaming flows.
+
+    Attributes:
+        context (str): System-level context or instructions provided to the model.
+        func_tools_dict (dict): Mapping from tool name to Python callable.
+        tools (list): List of tool schemas (JSON) passed to the model.
+        client (OpenAI): Client instance used to call the Responses API.
+        input_list (list): Accumulated conversation messages and tool outputs
+            across the multi-step interaction.
+
+    Methods:
+        run_agent_stream(message): Perform a streaming agent interaction that
+            yields text deltas while optionally executing tools called by the model.
+        run_agent(message): Perform a synchronous (non-streaming) agent
+            interaction and return the final response text.
+        add_tool(name, func): Register a Python function as a callable tool
+            available to the model.
+
+    Usage example:
+        agent = BaseAgent(context='You are a helpful assistant', api_key='sk-...')
+        agent.add_tool('my_tool', my_tool_function)
+        result = agent.run_agent('Use my_tool to fetch data')
+    """
     def __init__(self,context: str = "",api_key:str=None):
         self.context = context
         self.func_tools_dict = {}
@@ -15,6 +48,8 @@ class BaseAgent:
     def run_agent_stream(self, message: str):
         self.input_list.append({"role": "system", "content": self.context})
         self.input_list.append({"role": "user", "content": message})
+
+        Logger.log("Starting streaming_agent_run")
 
         # 1️⃣ Stream initial response
         with self.client.responses.stream(
@@ -40,7 +75,7 @@ class BaseAgent:
             if item.type == "function_call":
                 tool = self.func_tools_dict[item.name]
                 args = json.loads(item.arguments)
-                result = tool(**args)
+                result = tool(**args)   
 
                 self.input_list.append({
                     "type": "function_call_output",
@@ -109,9 +144,9 @@ class BaseAgent:
             Logger.log(f"something went wrong: {e}")
             return None
 
-    def add_tool(self, name: str, func):
+    def add_tool(self, func):
         self.tools.append(function_to_tool_schema(func))
-        self.func_tools_dict[name] = func
+        self.func_tools_dict[func.__name__] = func
 
 
 def function_to_tool_schema(func):

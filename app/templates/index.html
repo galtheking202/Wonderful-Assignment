@@ -34,9 +34,9 @@ body {
 }
 
 .main {
-    flex: 2;
+    flex: 1 1 auto;
     padding: 48px;
-    max-width: 720px;
+    max-width: none;
 }
 
 .card {
@@ -73,6 +73,33 @@ button {
     cursor: pointer;
 }
 
+.dot-loader {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.dot-loader .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.25;
+    transform: translateY(0);
+    animation: dotPulse 1s infinite ease-in-out;
+}
+
+.dot-loader .dot:nth-child(1) { animation-delay: 0s; }
+.dot-loader .dot:nth-child(2) { animation-delay: 0.12s; }
+.dot-loader .dot:nth-child(3) { animation-delay: 0.24s; }
+
+@keyframes dotPulse {
+    0% { opacity: 0.25; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-4px); }
+    100% { opacity: 0.25; transform: translateY(0); }
+}
+
 #response {
     margin-top: 20px;
     padding: 16px;
@@ -90,18 +117,22 @@ button {
 }
 
 .sidebar {
-    flex: 1;
-    border-left: 1px solid var(--border);
-    padding: 24px;
+    flex: 0 0 260px; /* fixed, smaller width */
+    border-right: 1px solid var(--border);
+    padding: 16px;
     background: #020617;
+    display: flex;
+    flex-direction: column;
 }
 
 #logs {
-    height: 100%;
+    flex: 1 1 auto;
     font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
+    font-size: 11px;
     white-space: pre-wrap;
     color: #22c55e;
+    overflow: auto;
+    max-height: calc(100vh - 120px);
 }
 </style>
 </head>
@@ -109,21 +140,22 @@ button {
 <body>
 <div class="container">
 
+    <div class="sidebar">
+        <h3>System Logs</h3>
+        <div id="logs">Waiting for logs...</div>
+    </div>
+
     <div class="main">
         <h1>🧠 Pharmacy Agent</h1>
         <div class="card">
             <form id="agentForm">
                 <textarea id="prompt" placeholder="Ask about a medication..." required></textarea>
-                <button type="submit">Run Agent</button>
+                <button id="runBtn" type="submit">Run Agent</button>
             </form>
             <div id="response"></div>
         </div>
     </div>
 
-    <div class="sidebar">
-        <h3>System Logs</h3>
-        <div id="logs">Waiting for logs...</div>
-    </div>
 
 </div>
 
@@ -131,13 +163,19 @@ button {
 const form = document.getElementById("agentForm");
 const promptInput = document.getElementById("prompt");
 const responseDiv = document.getElementById("response");
+const loader = document.getElementById('loader');
+const runBtn = document.getElementById('runBtn');
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // show loading UI and disable inputs
     responseDiv.style.display = "block";
     responseDiv.className = "";
     responseDiv.textContent = "";
+    loader.style.display = 'inline-block';
+    runBtn.disabled = true;
+    promptInput.disabled = true;
 
     const res = await fetch("/agent", {
         method: "POST",
@@ -148,19 +186,45 @@ form.addEventListener("submit", async (e) => {
     if (!res.ok || !res.body) {
         responseDiv.textContent = "Streaming not supported.";
         responseDiv.className = "error";
+        loader.style.display = 'none';
+        runBtn.disabled = false;
+        promptInput.disabled = false;
         return;
     }
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
 
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+    try {
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
 
-        responseDiv.textContent += decoder.decode(value, { stream: true });
+            responseDiv.textContent += decoder.decode(value, { stream: true });
+        }
+    } finally {
+        // hide loading UI and re-enable inputs
+        loader.style.display = 'none';
+        runBtn.disabled = false;
+        promptInput.disabled = false;
     }
 });
+
+// Poll /logs and update the sidebar every second
+async function fetchLogs() {
+    try {
+        const res = await fetch('/logs');
+        if (!res.ok) return;
+        const data = await res.json();
+        const logsDiv = document.getElementById('logs');
+        logsDiv.textContent = data.logs || '';
+    } catch (e) {
+        console.error('Failed to fetch logs', e);
+    }
+}
+
+fetchLogs();
+setInterval(fetchLogs, 1000);
 </script>
 
 </body>

@@ -1,16 +1,16 @@
 db = db.getSiblingDB("mydb");
 
 db.users.insertMany([
-  { id: 1, name_en: "Alice", name_he: "אליס", age: 30, prescription_medicens: [1, 2],credits:100 },
-  { id: 2, name_en: "Bob", name_he: "בוב", age: 40, prescription_medicens: [],credits:100 },
-  { id: 3, name_en: "Charlie", name_he: "צ'רלי", age: 25, prescription_medicens: [],credits:100 },
-  { id: 4, name_en: "David", name_he: "דוד", age: 35, prescription_medicens: [],credits:100 },
-  { id: 5, name_en: "Eve", name_he: "חווה", age: 28, prescription_medicens: [1],credits:100 },
-  { id: 6, name_en: "Frank", name_he: "פרנק", age: 50, prescription_medicens: [],credits:100 },
-  { id: 7, name_en: "Grace", name_he: "גרייס", age: 22, prescription_medicens: [],credits:100 },
-  { id: 8, name_en: "Hannah", name_he: "חנה", age: 31, prescription_medicens: [2],credits:100 },
-  { id: 9, name_en: "Ivy", name_he: "איווי", age: 27, prescription_medicens: [],credits:100 },
-  { id: 10, name_en: "Jack", name_he: "ג'ק", age: 45, prescription_medicens: [1],credits:100 }
+  { id: 1, name_en: "Alice", name_he: "אליס", age: 30, prescription_medicens_id: [1, 2], credits:100, password: "alice123" },
+  { id: 2, name_en: "Bob", name_he: "בוב", age: 40, prescription_medicens_id: [], credits:100, password: "bob123" },
+  { id: 3, name_en: "Charlie", name_he: "צ'רלי", age: 25, prescription_medicens_id: [], credits:100, password: "charlie123" },
+  { id: 4, name_en: "David", name_he: "דוד", age: 35, prescription_medicens_id: [], credits:100, password: "david123" },
+  { id: 5, name_en: "Eve", name_he: "חווה", age: 28, prescription_medicens_id: [1], credits:100, password: "eve123" },
+  { id: 6, name_en: "Frank", name_he: "פרנק", age: 50, prescription_medicens_id: [], credits:100, password: "frank123" },
+  { id: 7, name_en: "Grace", name_he: "גרייס", age: 22, prescription_medicens_id: [], credits:100, password: "grace123" },
+  { id: 8, name_en: "Hannah", name_he: "חנה", age: 31, prescription_medicens_id: [2], credits:100, password: "hannah123" },
+  { id: 9, name_en: "Ivy", name_he: "איווי", age: 27, prescription_medicens_id: [], credits:100, password: "ivy123" },
+  { id: 10, name_en: "Jack", name_he: "ג'ק", age: 45, prescription_medicens_id: [1], credits:100, password: "jack123" }
 ]);
 
 db.medicens_stock.insertMany([
