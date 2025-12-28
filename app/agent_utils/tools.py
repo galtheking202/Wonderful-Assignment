@@ -3,6 +3,38 @@ from agent_utils.db import db
 
 
 # ---------------- TOOLS ---------------- #
+def get_client_prescriptions(user_name: str = ""):
+    """
+    This function will return the list of prescription medicine for a given user.
+    """
+    Logger.log("get_client_prescriptions tool called")
+    user_name = user_name.strip()
+    try:
+        user_name = user_name.lower()
+    except Exception as e:
+        user_name = user_name
+
+    user = db["users"].find_one(
+        {
+            "$or": [
+                {"name_en": {"$regex": f"^{user_name}$", "$options": "i"}},
+                {"name_he": {"$regex": f"^{user_name}$", "$options": "i"}}
+            ]
+        },
+        {"_id": 0, "prescription_medicens_id": 1}
+    )
+
+    if not user:
+        return f"No matching user found for {user_name}."
+
+    pres_ids = user.get("prescription_medicens_id", []) or []
+    if not pres_ids:
+        return []
+
+    # Query medicens_stock for the prescription ids and return full docs
+    meds = list(db["medicens_stock"].find({"id": {"$in": pres_ids}}, {"_id": 0}))
+    return meds
+
 def get_medicine_by_id(medicine_id: int = 0):
     """
     This function will return medicine data by its ID.

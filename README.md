@@ -25,9 +25,10 @@ the agent does not preform any verification
 - The agent lives in `app/agent_utils/` and provides:
 	- `BaseAgent` — wrapper around the OpenAI Responses client that manages
 		conversation state and function/tool registration.
+        agent side orchestraion loop is not implemented only model -> tools -> model calls.
 	- `tools.py` — Python functions registered as tools the model may call (DB
 		lookups, purchase operations).
-        
+
 - MongoDB runs in a separate container initialized from `mongo/init-mongo.js`.
 
 **How to run**

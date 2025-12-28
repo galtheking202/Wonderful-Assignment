@@ -117,9 +117,9 @@ button {
 }
 
 .sidebar {
-    flex: 0 0 260px; /* fixed, smaller width */
+    flex: 0 0 380px; /* wider logs panel */
     border-right: 1px solid var(--border);
-    padding: 16px;
+    padding: 20px;
     background: #020617;
     display: flex;
     flex-direction: column;
@@ -128,7 +128,8 @@ button {
 #logs {
     flex: 1 1 auto;
     font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
+    font-size: 14px; /* larger text for readability */
+    line-height: 1.45;
     white-space: pre-wrap;
     color: #22c55e;
     overflow: auto;
@@ -163,8 +164,39 @@ button {
 const form = document.getElementById("agentForm");
 const promptInput = document.getElementById("prompt");
 const responseDiv = document.getElementById("response");
-const loader = document.getElementById('loader');
 const runBtn = document.getElementById('runBtn');
+
+function showDotLoader() {
+    responseDiv.innerHTML = '';
+    const loader = document.createElement('span');
+    loader.id = 'dotLoader';
+    loader.className = 'dot-loader';
+    const d1 = document.createElement('span'); d1.className = 'dot';
+    const d2 = document.createElement('span'); d2.className = 'dot';
+    const d3 = document.createElement('span'); d3.className = 'dot';
+    loader.appendChild(d1);
+    loader.appendChild(d2);
+    loader.appendChild(d3);
+
+    const textHolder = document.createElement('div');
+    textHolder.id = 'responseText';
+    textHolder.style.whiteSpace = 'pre-wrap';
+    textHolder.style.lineHeight = '1.6';
+
+    responseDiv.appendChild(loader);
+    responseDiv.appendChild(textHolder);
+}
+
+function removeDotLoader() {
+    const loader = document.getElementById('dotLoader');
+    if (loader) loader.remove();
+}
+
+function appendToResponse(text) {
+    const holder = document.getElementById('responseText');
+    if (holder) holder.textContent += text;
+    else responseDiv.textContent += text;
+}
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -172,8 +204,8 @@ form.addEventListener("submit", async (e) => {
     // show loading UI and disable inputs
     responseDiv.style.display = "block";
     responseDiv.className = "";
-    responseDiv.textContent = "";
-    loader.style.display = 'inline-block';
+    // insert animated dots where response text will appear
+    showDotLoader();
     runBtn.disabled = true;
     promptInput.disabled = true;
 
@@ -184,9 +216,9 @@ form.addEventListener("submit", async (e) => {
     });
 
     if (!res.ok || !res.body) {
+        removeDotLoader();
         responseDiv.textContent = "Streaming not supported.";
         responseDiv.className = "error";
-        loader.style.display = 'none';
         runBtn.disabled = false;
         promptInput.disabled = false;
         return;
@@ -196,15 +228,24 @@ form.addEventListener("submit", async (e) => {
     const decoder = new TextDecoder();
 
     try {
+        let first = true;
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
 
-            responseDiv.textContent += decoder.decode(value, { stream: true });
+            const chunk = decoder.decode(value, { stream: true });
+            if (first) {
+                // remove dots when the first chunk arrives so text appears in place
+                removeDotLoader();
+                appendToResponse(chunk);
+                first = false;
+            } else {
+                appendToResponse(chunk);
+            }
         }
     } finally {
-        // hide loading UI and re-enable inputs
-        loader.style.display = 'none';
+        // ensure loader removed and inputs re-enabled
+        removeDotLoader();
         runBtn.disabled = false;
         promptInput.disabled = false;
     }
