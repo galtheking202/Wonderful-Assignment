@@ -7,7 +7,7 @@ def get_client_prescriptions(user_name):
     """
     This function will return the list of prescription medicine for a given user.
     """
-    Logger.log("get_client_prescriptions tool called")
+    Logger.log("get_client_prescriptions")
     user_name = user_name.strip()
     try:
         user_name = user_name.lower()
@@ -39,7 +39,7 @@ def get_medicine_by_name(medicine_name):
     """
     This function will return medicine data by its name 
     """
-    Logger.log("get_medicine_by_name tool called")
+    Logger.log("get_medicine_by_name")
     medicine_name = medicine_name.strip()
     try:
         medicine_name = medicine_name.lower()
@@ -65,7 +65,7 @@ def purchase_medicine(user_name: str = "", medicine_name: str = "", amount: int 
     it validates user existence, medicine availability, inventory, credits, and prescription requirements.
     If all checks pass, it deducts the inventory and user credits, confirming the purchase.
     """
-    Logger.log("purchase_medicine tool called")
+    Logger.log("purchase_medicine")
     user_name = user_name.strip().lower()
     medicine_name = medicine_name.strip().lower()
 
