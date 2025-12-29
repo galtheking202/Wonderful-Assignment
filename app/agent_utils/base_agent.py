@@ -111,10 +111,8 @@ class BaseAgent:
                 tools=self.tools,
             )
             self.input_list += response.output
-            print(response.output)
             for item in response.output:
                 if item.type == "function_call":
-                    print(item)
                     if self.func_tools_dict.get(item.name) is None:
                         raise Exception(f"Tool {item.name} not found")
 
@@ -139,7 +137,6 @@ class BaseAgent:
                 tools=self.tools,
                 input=self.input_list,
                 )
-            print(response.output_text) 
             return response.output_text
         except Exception as e:
             Logger.log(f"something went wrong: {e}")
@@ -176,7 +173,7 @@ def function_to_tool_schema(func):
             "type": json_type,
             "description": name
         }
-    d = {
+    return {
         "type": "function",
         "name": func.__name__,
         "description": func.__doc__ or "",
@@ -186,5 +183,3 @@ def function_to_tool_schema(func):
             "required": required
         }
     }
-    print(d)
-    return d

@@ -1,10 +1,11 @@
-from pymongo import MongoClient
+import os
+os.environ["RUN_ENV"] = "local" # Set environment to local for testing
+
 from agent_utils.agent import MedicineAssistantAgent
 import pandas as pd
 from logger import LOG_BUFFER
 
 df = pd.read_excel("agent_evaluation_prompts.xlsx")
-
 
 import pandas as pd
 
