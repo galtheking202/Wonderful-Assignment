@@ -61,7 +61,7 @@ def get_medicine_by_name(medicine_name):
 
 def purchase_medicine(user_name: str = "", medicine_name: str = "", amount: int = 1):
     """
-    This function processes a medicine purchase for a user.
+    This function handle purchase,buy,aquiring medicine.
     it validates user existence, medicine availability, inventory, credits, and prescription requirements.
     If all checks pass, it deducts the inventory and user credits, confirming the purchase.
     """

@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-print(os.getenv("RUN_ENV"))
 if os.getenv("RUN_ENV") == "docker":
     CONNECTION_STRING = "mongodb://root:example@mongo:27017" # Docker setup
 else:

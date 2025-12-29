@@ -18,18 +18,18 @@ for idx, row in df.iterrows():
     full_response = ""
     for chunk in agent.run_agent_stream(user_prompt):
         full_response += chunk
-
+    print(f"Completed Prompt ID {idx}")
     results.append({
         "Prompt_ID": idx,
         "User_Prompt": user_prompt,
         "Expected_Tools": row["Expected_Tools"],
         "Tools_Called": ",".join(LOG_BUFFER[1:]), # Skip the first log entry which is usually the start log
-        "Agent_Response": full_response
-
+        "Agent_Response": full_response,
+        "Test_type":row["Test_type"],
     })
 
     # 🔹 SAVE CHECKPOINT EACH ITERATION
-    pd.DataFrame(results).to_excel("test_output.xlsx", index=False)
+    pd.DataFrame(results).to_excel("agent_evaluation_prompts_output.xlsx", index=False)
 
     LOG_BUFFER.clear() # Clear logs for the next iteration
 
