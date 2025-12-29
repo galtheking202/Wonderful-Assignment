@@ -2,16 +2,17 @@
 
 A small Pharmacy Assistant web app that demonstrates an LLM-driven agent integrated
 with a MongoDB backend and a FastAPI frontend. The agent can query inventory,
-query users information, and perform purchases via callable Python tools exposed to the model.
+query users perscriptions,provide data about dosage and usage of medicine, and perform purchases via callable Python tools exposed to the model.
 
-the agent does not preform any verification
+the agent does not preform any verification of users
 
 **Project layout**
-- `app/` — FastAPI application, templates, and agent code
+- `app/` - FastAPI application, templates, and agent code
 	- `agent_utils/` - agent framework, tools, and database helpers
 	- `templates/` - frontend HTML (`index.html`)
 	- `main.py` - FastAPI app entrypoint
 	- `logger.py` - in-memory log buffer used by the UI
+	- `testing.py` - Scale testing script
 - `mongo/` - Dockerized MongoDB init script (`init-mongo.js`) and Dockerfile
 - `docker-compose.yml` - local dev environment (app + mongo)
 
@@ -43,6 +44,9 @@ the agent does not preform any verification
     - `mongo`: MongoDB with initial data imported from `mongo/init-mongo.js`
 
 3. Open your browser to http://localhost:8888 to use the UI.
+4. create .env file with:
+	- OPENAI_APY_KEY=<your_api_key>
+	- RUN_ENV="docker"
 
 **Development tips**
 - If you change `mongo/init-mongo.js` you must recreate the Mongo container
@@ -54,3 +58,6 @@ the agent does not preform any verification
 **Testing**
 - Able to run large scale testing `agent_evaluation_prompts.xslx`
 	enter user prompts into User_Prompts column and run `testing.py` and Mongo docker.
+
+**Agent Multi-step Flow visualization**
+    `multi_step_flow_drawio.html`
